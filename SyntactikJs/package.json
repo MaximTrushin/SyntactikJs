@@ -1,0 +1,30 @@
+{
+  "name": "syntactikjs",
+  "version": "0.0.1",
+  "description": "Markup language",
+  "main": "index.js",
+  "dependencies": {
+    "amd-loader": "^0.0.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MaximTrushin/SyntactikJs.git"
+  },
+  "keywords": [
+    "markup",
+    "language",
+    "preprocessor",
+    "xml",
+    "json"
+  ],
+  "author": "Maxim Trushin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MaximTrushin/SyntactikJs/issues"
+  },
+  "homepage": "https://github.com/MaximTrushin/SyntactikJs"
+}
