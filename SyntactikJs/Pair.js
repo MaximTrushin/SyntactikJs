@@ -9,6 +9,19 @@
         this.delimiter = DelimiterEnum.None;
         this.nameQuotesType = 0;
         this.valueQuotesType = 0;
+        this.blockIndent = -1;
+        this.nameInterval = {
+            begin: {
+                index: -1,
+                line: 0,
+                column: 0
+            },
+            end: {
+                index: -1,
+                line: 0,
+                column: 0
+            }
+        };
 
     };
 
