@@ -144,6 +144,12 @@
                 || this.next === 39 /* ' */ || this.next === 34 /* " */ || this.next === 41 /* ) */ || this.next === 40 /* ( */;
         };
 
+        this.isEndOfOpenString = function () {
+            if (this.next > 61) return false;
+            return this.next === 61 /* = */ || this.next === 58 /* : */ || this.next === 44 /* , */
+                || this.next === 39 /* ' */ || this.next === 34 /* " */ || this.next === 41 /* ) */ || this.next === 40 /* ( */;
+        };
+
     }).call(InputStream.prototype);
 
     exports.InputStream = InputStream;
