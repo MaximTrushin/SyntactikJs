@@ -83,6 +83,10 @@
                         if (this.lineState.state !== ParserStateEnum.IndentMLS && this.lineState.state !== ParserStateEnum.PairDelimiter)
                             this.lineState.state = this.lineState.ChainingStarted ? ParserStateEnum.Delimiter : ParserStateEnum.PairDelimiter;
                         break;
+                    case ParserStateEnum.PairDelimiter:
+                        this.parsePairDelimiter();
+                        this.lineState.state = ParserStateEnum.Name;
+                        break;
                 }
             }
         };
@@ -465,7 +469,7 @@
                             return false;
                         }
                         this.input.consume();
-                        this.reportUnexpectedCharacter(c);
+                        this.reportUnexpectedCharacter();
                         break;
                     case 40: //()
                         this.input.consume();
@@ -710,8 +714,10 @@
                 listener.apply(this, arguments);
             }
         };
-        this.assignMappedValueToPair = function(begin1, location) {
-            
+        this.assignMappedValueToPair = function(begin, end) {
+            var pair = this.pairStack[this.pairStack.length - 1].pair;
+            pair.valueInterval.begin = begin;
+            pair.valueInterval.end = end;
         };
         this.parseDQValue = function() {
             this.pairStack[this.pairStack.length - 1].pair.valueQuotesType = 2;
@@ -773,6 +779,92 @@
 
             }
             this.assignMappedValueToPair(begin, end);
+        };
+        this.parsePairDelimiter = function() {
+            var firstComma = true;
+            while (this.input.next !== -1) {
+                if (this.input.consumeSpaces()) { }
+                else if (this.input.consumeComments()) { }
+                else if (this.input.next === 40) {  // (
+                    this.input.consume();
+                    this.reportUnexpectedCharacter();
+                }
+                else if (this.input.next === 41) {  // )
+                    if (this.wsaStack.length > 0) {
+                        var p = this.wsaStack.pop();
+                        this.lineState.chainingStarted = false;
+                        firstComma = true;
+                        while (this.pairStack.length > 0) {
+                            var p1 = this.pairStack.pop().pair;
+                            if (p1 === p) break;
+                        }
+                        this.input.consume();
+                    }
+                    else {
+                        this.input.consume();
+                        this.reportUnexpectedCharacter();
+                    }
+
+                }
+                else if (this.input.next === 44) {  // 
+                    //There can be only 1 comma between pairs.
+                    if (firstComma && this.lineState.inline) {
+                        this.exitPair();
+                        firstComma = false;
+                        this.input.consume();
+                    }
+                    else {
+                        this.reportUnexpectedCharacter();
+                        this.input.consume();
+                    }
+                } else if (this.input.isNewLineCharacter()) {
+                    if (this.wsaStack.length > 0) {
+                        this.input.consumeNewLine();
+                        this.consumeLeadingSpaces();
+                    } else {
+                        break;
+                    }
+                }
+                else // new pair is starting
+                {
+                    var p = this.pairStack[this.pairStack.length - 1].pair;
+                    if (p.delimiter === DelimiterEnum.E || p.delimiter === DelimiterEnum.EE || p.delimiter === DelimiterEnum.CE || p.delimiter === DelimiterEnum.None)
+                    {
+                        this.exitPair();
+                        p = this.pairStack[this.pairStack.length - 1].pair;
+
+                        if (this.lineState.inline && p.block !== null && p.block.length > 0 && firstComma)
+                        {
+                            this.reportSyntaxError(1, this.getLocation(this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
+                        }
+                    }
+                    else
+                    {
+                        p = this.pairStack[this.pairStack.length - 1].pair;
+
+                        if (this.lineState.inline && p.block !== null && p.block.length > 0 && firstComma)
+                        {
+                            this.reportSyntaxError(1, this.getLocation(this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
+                            this.exitPair();
+                        }
+                    }
+                    break;
+                }
+            }
+        };
+        this.exitPair = function() {
+            if (this.lineState.chainingStarted) {
+                while (this.pairStack[this.pairStack.length - 1].pair !== this.lineState.chainStart) this.pairStack.pop();
+                this.lineState.chainingStarted = false;
+                this.lineState.chainStart = null;
+            }
+
+            if (this.pairStack[this.pairStack.length - 1].indent === this.lineState.indent)
+                this.pairStack.pop();
+            
+        };
+        this.reportUnexpectedCharacter = function() {
+            this.reportSyntaxError(0, this.getLocation(this.input), this.input.getChar(this.input.index));
         };
     }).call(Parser.prototype);
 
