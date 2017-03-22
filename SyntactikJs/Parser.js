@@ -87,6 +87,19 @@
                         this.parsePairDelimiter();
                         this.lineState.state = ParserStateEnum.Name;
                         break;
+                    case ParserStateEnum.IndentMLS:
+                        if (this.parseMlStringIndent()) {
+                            if (!this.parseMlValue())
+                                this.lineState.state = ParserStateEnum.Indent;
+                        }
+                        else {
+                            this.lineState.state = ParserStateEnum.PairDelimiter;
+                        }
+                        break;
+                }
+                if (this.wsaStack.length === 0 && this.eol()) {
+                    this.exitInlinePair();
+                    break;
                 }
             }
         };
@@ -164,7 +177,64 @@
         };
 
         this.parseMlStringIndent = function () {
+            var begin = -1;
+            var end = -2;
+            var p = this.pairStack[this.pairStack.length - 1];
+            var currentIndent = p.indent;
+            var indentCounter = 0;
 
+            var indentSum = 0;
+            while (true) {
+                if (this.input.next === 9 || this.input.next === 32) {
+                    if (this.indentSymbol === 0) //First indent defines indent standard for the whole file.
+                    {
+                        this.indentSymbol = this.input.next;
+                        this.indentMultiplicity = 1;
+                    }
+                    indentCounter++;
+                    if (indentCounter <= currentIndent + this.indentMultiplicity) {
+                        indentSum += this.input.next;
+                        this.input.consume();
+                        if (begin === -1) begin = this.input.index;
+                        end = this.input.index;
+                    }
+                    else this.input.consume();
+
+                }
+                else if (this.input.next === -1) {
+                    break;
+                }
+                else if (this.input.isNewLineCharacter()) {
+                    this.input.consumeNewLine();
+                    indentSum = 0;
+                    indentCounter = 0;
+                    begin = -1;
+                    end = -2;
+                }
+                else {
+                    break;
+                }
+
+            }
+            var indent = end - begin + 1;
+
+            if (this.input.next !== -1 && (indent > currentIndent)) {
+                this.checkIndentErrors(indent, indentSum);
+                return true;
+            }
+
+
+            var valueEnd = p.pair.valueInterval.end;
+            var valueStart = this.getValueStart(p.pair);
+            if (valueStart > 0) {
+                this.assignValueToPair(p.pair.valueInterval.begin, p.pair.valueInterval.end, true);
+                this.reportMLSSyntaxError(1, this.createInterval(valueEnd, valueEnd), valueStart);
+            }
+            else this.assignValueToPair(p.pair.valueInterval.begin, p.pair.valueInterval.end, false);
+
+            this.processIndent(begin, end, indentSum);
+
+            return false;
         };
 
         this.resetState = function () {
@@ -632,7 +702,7 @@
             var firstEmptyLine = true; //If true then previous line was not empty therefor newline shouldn't be added
 
             for (var item of lines) {
-                var line = trimEndOfOpenStringLine(item, pair.valueQuotesType !== 0);
+                var line = trimEndOfOpenStringLine(item, pair.valueQuotesType === 0);
 
                 if (first) { sb += line; first = false; continue; } //adding first line without appending new line symbol
 
@@ -865,6 +935,87 @@
         };
         this.reportUnexpectedCharacter = function() {
             this.reportSyntaxError(0, this.getLocation(this.input), this.input.getChar(this.input.index));
+        };
+        this.eol = function() {
+            if (this.input.next === -1) return true;
+            if (this.input.next === 13) {
+                this.input.consume();
+            }
+            if (this.input.next !== 10) return false;
+            this.input.consume();
+            return true;
+        };
+        this.exitInlinePair = function() {
+            if (this.lineState.state === ParserStateEnum.IndentMLS) return;
+
+            while (this.pairStack.length > 1) {
+                var pi = this.pairStack[this.pairStack.length - 1];
+
+                if (pi.indent < this.lineState.indent) return;
+
+                if (pi.pair.delimiter === DelimiterEnum.E || pi.pair.delimiter === DelimiterEnum.EE || pi.pair.delimiter === DelimiterEnum.CE || pi.pair.delimiter === DelimiterEnum.None)
+                {
+                    this.pairStack.pop();
+                }
+                else
+                {
+                    if (pi.pair.block.length > 0) this.pairStack.pop();
+                    else return;
+                }
+            }
+        };
+        this.parseMlValue = function() {
+            var p = this.pairStack[this.pairStack.length - 1].pair;
+            var valueStart = this.getValueStart(p);
+
+            while (true) {
+                if (this.input.next === valueStart) { //Quoted ML string ended
+                    this.input.consume();
+                    p.valueInterval.end = this.getLocation(this.input);
+                    this.assignValueToPair(p.valueInterval.begin, p.valueInterval.end, false);
+                    this.ensureNothingElseBeforeEol();
+                    return false;
+                }
+
+                if (this.input.next === 92 /* \ */ && valueStart === 39  /* ' */) //escape symbol in SQS  
+                {
+                    this.input.consume();
+                }
+
+                if (this.input.isNewLineCharacter()) {
+                    p.valueInterval.end = this.getLocation(this.input);
+                    return true;
+                }
+
+                if (this.input.next === -1) {
+                    p.valueInterval.end = this.getLocation(this.input);
+                    if (valueStart > 0) {
+                        this.reportMLSSyntaxError(1, this.createInterval(this.input, this.input), valueStart);
+                        this.assignValueToPair(p.valueInterval.begin, p.valueInterval.end, true);
+                    }
+                    else this.assignValueToPair(p.valueInterval.begin, p.valueInterval.end, false);
+                    return false;
+                }
+                this.input.consume();
+            }
+        };
+        this.getValueStart = function(pair) {
+            if (pair.valueQuotesType === 2) return 42;
+            if (pair.valueQuotesType === 1) return 39;
+            return -2;
+        };
+        this.reportMLSSyntaxError = function (code, interval, start) {
+            var quoteName = start === 34/* " */ ? "Double quote" : "Single quote";
+            this.reportSyntaxError(code, interval, quoteName);
+        };
+        this.ensureNothingElseBeforeEol = function() {
+            while (this.input.next !== -1 && !this.input.isNewLineCharacter()) {
+                if (this.input.consumeSpaces() || this.input.consumeComments()) { }
+                else {
+                    this.input.consume();
+                    this.reportUnexpectedCharacter();
+                }
+            }
         };
     }).call(Parser.prototype);
 

@@ -3,7 +3,7 @@
 require("amd-loader");
 
 var InputStream = require("./InputStream").InputStream;
-var input = new InputStream("el1 =   'text1' ");
+var input = new InputStream("el1 =   'text1\n\n line2");
 
 var Parser = require("./Parser").Parser;
 var parser = new Parser(input);
