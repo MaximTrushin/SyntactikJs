@@ -1,4 +1,4 @@
-﻿define(function (require, exports, module) {
+﻿define(function (require, exports) {
     "use strict";
     /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
 
@@ -1019,5 +1019,16 @@
         };
     }).call(Parser.prototype);
 
+    var Errors = [
+        "Unexpected character(s) `{0}`.", // 0
+        "{0} is expected.", // 1
+        "Invalid indentation.", //2
+        "Block indent mismatch.",// 3
+        "Invalid indent multiplicity.",// 4
+        "Mixed indentation.", //5
+        "Invalid indentation size."// 6
+    ];
+
     exports.Parser = Parser;
+    exports.Errors = Errors;
 });

@@ -29,6 +29,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="app.js" />
+    <Compile Include="DomPrinter.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="highlight_rules_test.js.js">
       <SubType>Code</SubType>
     </Compile>

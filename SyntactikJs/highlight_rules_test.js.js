@@ -240,16 +240,15 @@ module.exports = {
     test: test
 }
 
-// cli
-//var arg = process.argv[2];
-//if (!arg) {
-//    test();
-//    checkModes();
-//} else if (/--?g(en)?/.test(arg))
-//    generateTestData(process.argv.splice(3));
-//else if (/--?c(heck)?/.test(arg))
-//    checkModes(process.argv.splice(3));
-//else if (/\d+/.test(arg))
-//    test(parseInt(process.argv[2], 10) || 0);
-//else
-//    testMode(arg, -1);
+var arg = process.argv[2];
+if (!arg) {
+    test();
+    checkModes();
+} else if (/--?g(en)?/.test(arg))
+    generateTestData(process.argv.splice(3));
+else if (/--?c(heck)?/.test(arg))
+    checkModes(process.argv.splice(3));
+else if (/\d+/.test(arg))
+    test(parseInt(process.argv[2], 10) || 0);
+else
+    testMode(arg, -1);
