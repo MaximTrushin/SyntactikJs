@@ -8,7 +8,7 @@ var InputStream = require("../InputStream").InputStream;
 var DomPrinter = require("../DomPrinter").DomPrinter;
 var Parser = require("../Parser").Parser;
 
-
+var QUnit = require("qunitjs");
 
 
 function test() {
@@ -31,8 +31,17 @@ function testScenario(name) {
     console.log(domPrinter.printModule(pair));
 };
 
-module.exports = {
-    test: test
-}
+QUnit.test("a test", function (assert) {
+
+    function square(x) {
+        return x * x;
+    }
+
+    var result = square(2);
+
+    assert.equal(result, 5, "square(2) equals 4");
+});
+QUnit.start();
+
 
 test();

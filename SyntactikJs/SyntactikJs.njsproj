@@ -4,6 +4,8 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <Name>SyntactikJs</Name>
     <RootNamespace>SyntactikJs</RootNamespace>
+    <NodeExeArguments>
+    </NodeExeArguments>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -11,7 +13,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>a3283d31-f070-4479-8794-88a91142df86</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>tests\parser_test.js</StartupFile>
+    <StartupFile>test\parser_test.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -19,7 +21,7 @@
     <OutputPath>.</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
-    <StartWebBrowser>false</StartWebBrowser>
+    <StartWebBrowser>False</StartWebBrowser>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,57 +43,57 @@
     <Compile Include="Parser.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="tests\parser_test.js">
+    <Compile Include="test\parser_test.js">
       <SubType>Code</SubType>
     </Compile>
     <Content Include="package.json" />
     <Content Include="README.md" />
-    <Content Include="tests\Scenarios\ChainedPairs.smx" />
-    <Content Include="tests\Scenarios\ChainedPairs2.smx" />
-    <Content Include="tests\Scenarios\Comments.smx" />
-    <Content Include="tests\Scenarios\CommentsMultiline.smx" />
-    <Content Include="tests\Scenarios\DqName.smx" />
-    <Content Include="tests\Scenarios\DqName2.smx" />
-    <Content Include="tests\Scenarios\DqString.smx" />
-    <Content Include="tests\Scenarios\EmptyInlinePair.smx" />
-    <Content Include="tests\Scenarios\EmptyName.smx" />
-    <Content Include="tests\Scenarios\EmptyValue.smx" />
-    <Content Include="tests\Scenarios\EmptyValue1.smx" />
-    <Content Include="tests\Scenarios\EmptyValue2.smx" />
-    <Content Include="tests\Scenarios\EmptyValue3.smx" />
-    <Content Include="tests\Scenarios\EmptyWsaBlock.smx" />
-    <Content Include="tests\Scenarios\ErrorOpenParenthesis.smx" />
-    <Content Include="tests\Scenarios\ExtraDelimiter.smx" />
-    <Content Include="tests\Scenarios\InlineBlock.smx" />
-    <Content Include="tests\Scenarios\InvalidIndent.smx" />
-    <Content Include="tests\Scenarios\InvalidIndentMultiplicity.smx" />
-    <Content Include="tests\Scenarios\InvalidMixedIndentation.smx" />
-    <Content Include="tests\Scenarios\InvalidWsaIndent.smx" />
-    <Content Include="tests\Scenarios\MultilineDqString.smx" />
-    <Content Include="tests\Scenarios\MultilineDqString2.smx" />
-    <Content Include="tests\Scenarios\MultilineDqString3.smx" />
-    <Content Include="tests\Scenarios\MultilineFreeOpenString.smx" />
-    <Content Include="tests\Scenarios\MultilineOpenString.smx" />
-    <Content Include="tests\Scenarios\MultilineOpenStringIndent.smx" />
-    <Content Include="tests\Scenarios\MultilineSqString.smx" />
-    <Content Include="tests\Scenarios\MultilineSqString2.smx" />
-    <Content Include="tests\Scenarios\MultilineStringIndentMismatch.smx" />
-    <Content Include="tests\Scenarios\PairDelimiter.smx" />
-    <Content Include="tests\Scenarios\SimpleBlock.smx" />
-    <Content Include="tests\Scenarios\SimpleBlock1.smx" />
-    <Content Include="tests\Scenarios\SimpleBlock2.smx" />
-    <Content Include="tests\Scenarios\SimpleBlock3.smx" />
-    <Content Include="tests\Scenarios\SimplePair.smx" />
-    <Content Include="tests\Scenarios\SqName.smx" />
-    <Content Include="tests\Scenarios\SqName2.smx" />
-    <Content Include="tests\Scenarios\UnclosedDq.smx" />
-    <Content Include="tests\Scenarios\UnclosedDq2.smx" />
-    <Content Include="tests\Scenarios\Wsa.smx" />
-    <Content Include="tests\Scenarios\Wsa2.smx" />
+    <Content Include="test\Scenarios\ChainedPairs.smx" />
+    <Content Include="test\Scenarios\ChainedPairs2.smx" />
+    <Content Include="test\Scenarios\Comments.smx" />
+    <Content Include="test\Scenarios\CommentsMultiline.smx" />
+    <Content Include="test\Scenarios\DqName.smx" />
+    <Content Include="test\Scenarios\DqName2.smx" />
+    <Content Include="test\Scenarios\DqString.smx" />
+    <Content Include="test\Scenarios\EmptyInlinePair.smx" />
+    <Content Include="test\Scenarios\EmptyName.smx" />
+    <Content Include="test\Scenarios\EmptyValue.smx" />
+    <Content Include="test\Scenarios\EmptyValue1.smx" />
+    <Content Include="test\Scenarios\EmptyValue2.smx" />
+    <Content Include="test\Scenarios\EmptyValue3.smx" />
+    <Content Include="test\Scenarios\EmptyWsaBlock.smx" />
+    <Content Include="test\Scenarios\ErrorOpenParenthesis.smx" />
+    <Content Include="test\Scenarios\ExtraDelimiter.smx" />
+    <Content Include="test\Scenarios\InlineBlock.smx" />
+    <Content Include="test\Scenarios\InvalidIndent.smx" />
+    <Content Include="test\Scenarios\InvalidIndentMultiplicity.smx" />
+    <Content Include="test\Scenarios\InvalidMixedIndentation.smx" />
+    <Content Include="test\Scenarios\InvalidWsaIndent.smx" />
+    <Content Include="test\Scenarios\MultilineDqString.smx" />
+    <Content Include="test\Scenarios\MultilineDqString2.smx" />
+    <Content Include="test\Scenarios\MultilineDqString3.smx" />
+    <Content Include="test\Scenarios\MultilineFreeOpenString.smx" />
+    <Content Include="test\Scenarios\MultilineOpenString.smx" />
+    <Content Include="test\Scenarios\MultilineOpenStringIndent.smx" />
+    <Content Include="test\Scenarios\MultilineSqString.smx" />
+    <Content Include="test\Scenarios\MultilineSqString2.smx" />
+    <Content Include="test\Scenarios\MultilineStringIndentMismatch.smx" />
+    <Content Include="test\Scenarios\PairDelimiter.smx" />
+    <Content Include="test\Scenarios\SimpleBlock.smx" />
+    <Content Include="test\Scenarios\SimpleBlock1.smx" />
+    <Content Include="test\Scenarios\SimpleBlock2.smx" />
+    <Content Include="test\Scenarios\SimpleBlock3.smx" />
+    <Content Include="test\Scenarios\SimplePair.smx" />
+    <Content Include="test\Scenarios\SqName.smx" />
+    <Content Include="test\Scenarios\SqName2.smx" />
+    <Content Include="test\Scenarios\UnclosedDq.smx" />
+    <Content Include="test\Scenarios\UnclosedDq2.smx" />
+    <Content Include="test\Scenarios\Wsa.smx" />
+    <Content Include="test\Scenarios\Wsa2.smx" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="tests\" />
-    <Folder Include="tests\Scenarios\" />
+    <Folder Include="test\" />
+    <Folder Include="test\Scenarios\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
