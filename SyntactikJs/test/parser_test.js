@@ -32,24 +32,50 @@ function testScenario(name) {
         var args = arguments;
         errors.push(format(Parser.Errors[args[0]], Array.prototype.slice.call(args, 2)) + " (" + args[1].begin.line + ":" + args[1].begin.column
             + ")-(" + args[1].end.line + ":" + args[1].end.column + ")");
+    });
+
 
     var domPrinter = new DomPrinter();
     var pair = parser.parseModule();
-    console.log("DOM:");
-    console.log(domPrinter.printModule(pair));
-};
+    console.log("\u001b[33m" + "\nDOM:" + "\u001b[0m");
+    var dom = domPrinter.printModule(pair);
+    console.log(dom);
 
-QUnit.test("a test", function (assert) {
-
-    function square(x) {
-        return x * x;
+    var recordedDomName = cwd + "/scenarios/recorded/" + name + ".dom";
+    if (fs.existsSync(recordedDomName)) {
+        var recordedDom = fs.readFileSync(cwd + "/scenarios/recorded/" + name + ".dom", "utf8").replace(/\r\n/g, "\n");
+        console.log("\u001b[33m" + "Recorded DOM:" + "\u001b[0m");
+        console.log(recordedDom);
+        assert.equal(recordedDom, dom);
     }
 
-    var result = square(2);
+    console.log("\u001b[33m" + "Errors:" + "\u001b[0m");
+    console.log(errors.join("\n"));
 
-    assert.equal(result, 5, "square(2) equals 4");
-});
-QUnit.start();
+    var recordedErrorName = cwd + "/scenarios/recorded/" + name + ".error";
+    if (fs.existsSync(recordedErrorName)) {
 
+        var recordedError = fs.readFileSync(cwd + "/scenarios/recorded/" + name + ".error", "utf8").replace(/\r\n/g, "\n");
+        console.log("\u001b[33m" + "Recorded Errors:" + "\u001b[0m");
+        console.log(recordedError);
+        assert.equal(recordedError, errors.join("\n") + "\n");
+    } else {
+        assert.equal(errors.length, 0);
+    }
+    
+};
+
+function format() {
+    var args = arguments;
+    return args[0].replace(/{(\d+)}/g, function (match, number) {
+        return typeof args[1][number] != 'undefined'
+            ? args[1][number]
+            : match
+            ;
+    });
+};
 
 test();
+//testScenario("UnclosedDq");
+
+console.log("\u001b[32m" + "all ok" + "\u001b[0m");
