@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>a3283d31-f070-4479-8794-88a91142df86</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>app.js</StartupFile>
+    <StartupFile>tests\parser_test.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -32,9 +32,6 @@
     <Compile Include="DomPrinter.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="highlight_rules_test.js.js">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="InputStream.js">
       <SubType>Code</SubType>
     </Compile>
@@ -44,11 +41,57 @@
     <Compile Include="Parser.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SyntactikParser.js">
+    <Compile Include="tests\parser_test.js">
       <SubType>Code</SubType>
     </Compile>
     <Content Include="package.json" />
     <Content Include="README.md" />
+    <Content Include="tests\Scenarios\ChainedPairs.smx" />
+    <Content Include="tests\Scenarios\ChainedPairs2.smx" />
+    <Content Include="tests\Scenarios\Comments.smx" />
+    <Content Include="tests\Scenarios\CommentsMultiline.smx" />
+    <Content Include="tests\Scenarios\DqName.smx" />
+    <Content Include="tests\Scenarios\DqName2.smx" />
+    <Content Include="tests\Scenarios\DqString.smx" />
+    <Content Include="tests\Scenarios\EmptyInlinePair.smx" />
+    <Content Include="tests\Scenarios\EmptyName.smx" />
+    <Content Include="tests\Scenarios\EmptyValue.smx" />
+    <Content Include="tests\Scenarios\EmptyValue1.smx" />
+    <Content Include="tests\Scenarios\EmptyValue2.smx" />
+    <Content Include="tests\Scenarios\EmptyValue3.smx" />
+    <Content Include="tests\Scenarios\EmptyWsaBlock.smx" />
+    <Content Include="tests\Scenarios\ErrorOpenParenthesis.smx" />
+    <Content Include="tests\Scenarios\ExtraDelimiter.smx" />
+    <Content Include="tests\Scenarios\InlineBlock.smx" />
+    <Content Include="tests\Scenarios\InvalidIndent.smx" />
+    <Content Include="tests\Scenarios\InvalidIndentMultiplicity.smx" />
+    <Content Include="tests\Scenarios\InvalidMixedIndentation.smx" />
+    <Content Include="tests\Scenarios\InvalidWsaIndent.smx" />
+    <Content Include="tests\Scenarios\MultilineDqString.smx" />
+    <Content Include="tests\Scenarios\MultilineDqString2.smx" />
+    <Content Include="tests\Scenarios\MultilineDqString3.smx" />
+    <Content Include="tests\Scenarios\MultilineFreeOpenString.smx" />
+    <Content Include="tests\Scenarios\MultilineOpenString.smx" />
+    <Content Include="tests\Scenarios\MultilineOpenStringIndent.smx" />
+    <Content Include="tests\Scenarios\MultilineSqString.smx" />
+    <Content Include="tests\Scenarios\MultilineSqString2.smx" />
+    <Content Include="tests\Scenarios\MultilineStringIndentMismatch.smx" />
+    <Content Include="tests\Scenarios\PairDelimiter.smx" />
+    <Content Include="tests\Scenarios\SimpleBlock.smx" />
+    <Content Include="tests\Scenarios\SimpleBlock1.smx" />
+    <Content Include="tests\Scenarios\SimpleBlock2.smx" />
+    <Content Include="tests\Scenarios\SimpleBlock3.smx" />
+    <Content Include="tests\Scenarios\SimplePair.smx" />
+    <Content Include="tests\Scenarios\SqName.smx" />
+    <Content Include="tests\Scenarios\SqName2.smx" />
+    <Content Include="tests\Scenarios\UnclosedDq.smx" />
+    <Content Include="tests\Scenarios\UnclosedDq2.smx" />
+    <Content Include="tests\Scenarios\Wsa.smx" />
+    <Content Include="tests\Scenarios\Wsa2.smx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="tests\" />
+    <Folder Include="tests\Scenarios\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

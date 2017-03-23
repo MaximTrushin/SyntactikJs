@@ -1,0 +1,5 @@
+00:00	 `Module`:
+01:01		 `bl`:
+03:03			 `el`= "line1\nline2"
+05:02			 `el2`= `line1 line2`
+10:02			 `el3`= 'line1 line2'
