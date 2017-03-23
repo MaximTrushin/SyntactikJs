@@ -81,7 +81,7 @@
                     case ParserStateEnum.Value:
                         this.parseValue();
                         if (this.lineState.state !== ParserStateEnum.IndentMLS && this.lineState.state !== ParserStateEnum.PairDelimiter)
-                            this.lineState.state = this.lineState.ChainingStarted ? ParserStateEnum.Delimiter : ParserStateEnum.PairDelimiter;
+                            this.lineState.state = this.lineState.chainingStarted ? ParserStateEnum.Delimiter : ParserStateEnum.PairDelimiter;
                         break;
                     case ParserStateEnum.PairDelimiter:
                         this.parsePairDelimiter();
@@ -113,7 +113,7 @@
             var indentSum = 0, begin = -1, end = -2;
             while (true) {
                 if (this.input.next === 9 || this.input.next === 32) {
-                    indentSum += this.input.next.chatCodeAt(0);
+                    indentSum += this.input.next;
                     this.input.consume();
                     if (begin === -1) begin = this.input.index;
                     end = this.input.index;
@@ -149,7 +149,7 @@
                     p.name = "";
                     this.setInterval(p.nameInterval, this.input, this.input);
 
-                    this.pairStack.peekBack().pair.block.push(p);
+                    this.pairStack[this.pairStack.length - 1].pair.block.push(p);
 
                     this.pairStack.push(
                         {
@@ -161,7 +161,8 @@
                     );
                     this.lineState.inline = true;
                     this.lineState.state = ParserStateEnum.Delimiter;
-                } if (this.input.consumeSpaces() || this.input.consumeComments()) {
+                    break;
+                } else if (this.input.consumeSpaces() || this.input.consumeComments()) {
                 } else if (this.input.isNewLineCharacter()) {
                     if (this.wsaStack.length > 0) {
                         this.input.consumeNewLine();
@@ -286,7 +287,7 @@
         this.processIndent = function(begin, end, indentSum) {
             var indent = end - begin + 1;
             if (this.indentSymbol === 0 && indent > 0) //First indent defines indent standard for the whole file.
-                this.indentSymbol = this.input.GetChar(begin);
+                this.indentSymbol = this.input.getChar(begin);
 
             while (this.pairStack[this.pairStack.length-1].indent >= indent) this.pairStack.pop();
 
@@ -380,18 +381,18 @@
         this.consumeLeadingSpaces = function() {
             
             if (this.input.next === 9 || this.input.next === 32) {
-                if (this.indentSymbol === 0) this.indentSymbol = this.input.next.charCodeAt(0);
+                if (this.indentSymbol === 0) this.indentSymbol = this.input.next;
             }
             else return;
 
-            var indentSum = this.input.next.charCodeAt(0);
+            var indentSum = this.input.next;
             var indent = 1;
             while (true) {
                 this.input.consume();
                 
                 if (!this.input.isSpaceCharacter()) break;
                 indent++;
-                indentSum += c;
+                indentSum += this.input.next;
             }
 
             if (indentSum !== this.indentSymbol * indent) this.reportInvalidIndentation(
@@ -459,8 +460,8 @@
                     p.delimiter = delimiter;
                 } else {
                     newPair = new Pair();
-                    newPair.name = this.input.getText(begin.index, end.index);
-                    newPair.nameInterval = this.createInterval(begin, end);
+                    newPair.name = this.input.getText(p.valueInterval.begin.index, p.valueInterval.end.index);
+                    newPair.nameInterval = p.valueInterval;
                     newPair.delimiter = delimiter;
 
                     p.ObjectValue = newPair;
@@ -485,8 +486,8 @@
                 }
                 else {
                     newPair = new Pair();
-                    newPair.name = this.input.getText(begin.index, end.index);
-                    newPair.nameInterval = this.createInterval(begin, end);
+                    newPair.name = this.input.getText(p.valueInterval.begin.index, p.valueInterval.end.index);
+                    newPair.nameInterval = p.valueInterval;
                     newPair.delimiter = delimiter;
                     newPair.createBlock();
                     p.objectValue = newPair;
@@ -859,66 +860,69 @@
                     this.input.consume();
                     this.reportUnexpectedCharacter();
                 }
-                else if (this.input.next === 41) {  // )
-                    if (this.wsaStack.length > 0) {
-                        var p = this.wsaStack.pop();
-                        this.lineState.chainingStarted = false;
-                        firstComma = true;
-                        while (this.pairStack.length > 0) {
-                            var p1 = this.pairStack.pop().pair;
-                            if (p1 === p) break;
+                else {
+                    var p;
+                    if (this.input.next === 41) {  // )
+                        if (this.wsaStack.length > 0) {
+                            p = this.wsaStack.pop();
+                            this.lineState.chainingStarted = false;
+                            firstComma = true;
+                            while (this.pairStack.length > 0) {
+                                var p1 = this.pairStack.pop().pair;
+                                if (p1 === p) break;
+                            }
+                            this.input.consume();
                         }
-                        this.input.consume();
-                    }
-                    else {
-                        this.input.consume();
-                        this.reportUnexpectedCharacter();
-                    }
+                        else {
+                            this.input.consume();
+                            this.reportUnexpectedCharacter();
+                        }
 
-                }
-                else if (this.input.next === 44) {  // 
-                    //There can be only 1 comma between pairs.
-                    if (firstComma && this.lineState.inline) {
-                        this.exitPair();
-                        firstComma = false;
-                        this.input.consume();
                     }
-                    else {
-                        this.reportUnexpectedCharacter();
-                        this.input.consume();
+                    else if (this.input.next === 44) {  // ,
+                        //There can be only 1 comma between pairs.
+                        if (firstComma && this.lineState.inline) {
+                            this.exitPair();
+                            firstComma = false;
+                            this.input.consume();
+                        }
+                        else {
+                            this.reportUnexpectedCharacter();
+                            this.input.consume();
+                        }
+                    } else if (this.input.isNewLineCharacter()) {
+                        if (this.wsaStack.length > 0) {
+                            this.input.consumeNewLine();
+                            this.consumeLeadingSpaces();
+                        } else {
+                            break;
+                        }
                     }
-                } else if (this.input.isNewLineCharacter()) {
-                    if (this.wsaStack.length > 0) {
-                        this.input.consumeNewLine();
-                        this.consumeLeadingSpaces();
-                    } else {
+                    else // new pair is starting
+                    {
+                        p = this.pairStack[this.pairStack.length - 1].pair;
+                        if (p.delimiter === DelimiterEnum.E || p.delimiter === DelimiterEnum.EE || p.delimiter === DelimiterEnum.CE || p.delimiter === DelimiterEnum.None)
+                        {
+                            this.exitPair();
+                            p = this.pairStack[this.pairStack.length - 1].pair;
+
+                            if (this.lineState.inline && p.block !== null && p.block.length > 0 && firstComma)
+                            {
+                                this.reportSyntaxError(1, this.getLocation(this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
+                            }
+                        }
+                        else
+                        {
+                            p = this.pairStack[this.pairStack.length - 1].pair;
+
+                            if (this.lineState.inline && p.block !== null && p.block.length > 0 && firstComma)
+                            {
+                                this.reportSyntaxError(1, this.getLocation(this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
+                                this.exitPair();
+                            }
+                        }
                         break;
                     }
-                }
-                else // new pair is starting
-                {
-                    var p = this.pairStack[this.pairStack.length - 1].pair;
-                    if (p.delimiter === DelimiterEnum.E || p.delimiter === DelimiterEnum.EE || p.delimiter === DelimiterEnum.CE || p.delimiter === DelimiterEnum.None)
-                    {
-                        this.exitPair();
-                        p = this.pairStack[this.pairStack.length - 1].pair;
-
-                        if (this.lineState.inline && p.block !== null && p.block.length > 0 && firstComma)
-                        {
-                            this.reportSyntaxError(1, this.getLocation(this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
-                        }
-                    }
-                    else
-                    {
-                        p = this.pairStack[this.pairStack.length - 1].pair;
-
-                        if (this.lineState.inline && p.block !== null && p.block.length > 0 && firstComma)
-                        {
-                            this.reportSyntaxError(1, this.getLocation(this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
-                            this.exitPair();
-                        }
-                    }
-                    break;
                 }
             }
         };
@@ -1016,6 +1020,53 @@
                     this.reportUnexpectedCharacter();
                 }
             }
+        };
+        this.reportMixedIndentation = function(interval) {
+            this.reportSyntaxError(5, interval);
+        };
+        this.startChaining = function() {
+            if (!this.lineState.chainingStarted) {
+                this.lineState.chainingStarted = true;
+                this.lineState.chainStart = this.pairStack[this.pairStack.length - 1].pair;
+            }
+        };
+        this.parseSQName = function() {
+            this.input.consume(); // Consume starting "
+            var begin = this.getLocation(this.input);
+
+            while (true) {
+                if (this.input.next === 39) { // ''
+                    this.input.consume();
+                    break;
+                }
+
+                if (this.input.isNewLineCharacter() || this.input.next === -1) {
+                    this.reportSyntaxError(1, this.createInterval(this.input, this.input), "Single quote");
+                    break;
+                }
+
+                this.input.consume();
+            }
+            var name = this.input.next === 39 /* ' */ ? this.input.getText(begin.index + 1, this.input.index - 1): this.input.getText(begin.index + 1, this.input.index);
+            var pair = new Pair();
+            pair.name = name;
+            pair.nameInterval = this.createInterval(begin, this.input);
+            this.nameQuotesType = 1;
+            this.pairStack[this.pairStack.length - 1].pair.block.push(pair);
+            this.pairStack.push({ pair: pair, indent: this.lineState.indent, begin: this.lineState.indentBegin, end: this.lineState.indentEnd });
+            this.lineState.inline = true;
+        };
+        this.reportBlockIndentationMismatch = function(interval) {
+            this.reportSyntaxError(3, interval);
+        };
+        this.reportInvalidIndentationSize = function(interval) {
+            this.reportSyntaxError(6, interval);
+        };
+        this.reportInvalidIndentationMultiplicity = function(interval) {
+            this.reportSyntaxError(4, interval);
+        };
+        this.reportInvalidIndentation = function(interval) {
+            this.reportSyntaxError(2, interval);
         };
     }).call(Parser.prototype);
 

@@ -1,4 +1,4 @@
-﻿define(function (require, exports, module) {
+﻿define(function (require, exports) {
     "use strict";
 
     /**
@@ -30,7 +30,7 @@
             this.index++;
             this.next = this.index + 2 <= this.length ? this.data.charCodeAt(this.index + 1) : -1;
 
-            if (this.data[this.index] === 10) {
+            if (this.data[this.index] === "\n") {
                 this.line = this.line + 1;
                 this.column = 0;
             } else {
