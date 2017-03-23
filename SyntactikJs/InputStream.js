@@ -13,7 +13,7 @@
      * @constructor
      **/
     var InputStream = function (input) {
-        this.data = input;
+        this.data = input.length > 0 && input.charCodeAt(0) === 65279?input.slice(1):input; //removing UTF-8 BOM if needed.
         this.length = this.data.length;
         this.line = 1;
         this.column = 0;
@@ -49,7 +49,7 @@
         this.la = function (i) {
             if (i > 0) {
                 var j = this.index + i;
-                return j >= this.length ? -1 : this.data[j];
+                return j >= this.length ? -1 : this.data[j].charCodeAt(0);
             }
 
             if (i === 0) {
@@ -62,7 +62,7 @@
                 return -1;
             }
             i += this.index;
-            return i >= this.length ? -1 : this.data[i];
+            return i >= this.length ? -1 : this.data[i].charCodeAt(0);
         };
         
         this.getText = function (begin, end) {
@@ -135,6 +135,12 @@
         this.isSpaceCharacter = function () {
             if (this.next === 9) return true;
             if (this.next === 32) return true;
+            return false;
+        };
+
+        this.isOnSpaceCharacter = function () {
+            if (this.data[this.index].charCodeAt(0) === 9) return true;
+            if (this.data[this.index].charCodeAt(0) === 32) return true;
             return false;
         };
 

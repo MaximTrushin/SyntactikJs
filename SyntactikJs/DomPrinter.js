@@ -41,7 +41,7 @@
                 this.text += ":= ";
                 this.valueNodeExpected.push(true);
                 this.printPair(pair.objectValue);
-                this.valueNodeExpected.Pop();
+                this.valueNodeExpected.pop();
             }
             if (pair.block != null) {
                 this.indent--;
@@ -54,9 +54,9 @@
             if (this.valueNodeExpected[this.valueNodeExpected.length-1]) {
                 this.text += "\t";
                 this.text += " ";
-                this.text += this.quoteTypeToChar(pair.NameQuotesType);
+                this.text += this.quoteTypeToChar(pair.nameQuotesType);
                 this.text += pair.name;
-                this.text += this.quoteTypeToChar(pair.NameQuotesType);
+                this.text += this.quoteTypeToChar(pair.nameQuotesType);
             }
             else {
                 this.text += pair.nameInterval ? ("0" + pair.nameInterval.begin.line).slice(-2) : "00";
@@ -67,9 +67,11 @@
                 }
                 this.text += "\t";
                 this.text += " ";
-                this.text += this.quoteTypeToChar(pair.NameQuotesType);
+                this.text += this.quoteTypeToChar(pair.nameQuotesType);
                 this.text += pair.name;
-                this.text += this.quoteTypeToChar(pair.NameQuotesType);
+                console.log(pair.name);
+                //return;
+                this.text += this.quoteTypeToChar(pair.nameQuotesType);
             }
             
         };
@@ -86,7 +88,6 @@
         };
         this.printValue = function(pair) {
             this.text += pair.value.replace("\r\n", "\n").replace("\n", "\\n").replace("\t", "\\t");
-            //_sb.Append(pair.Value.Replace("\r\n", "\n").Replace("\n", "\\n").Replace("\t", "\\t"));
         };
     }).call(DomPrinter.prototype);
     exports.DomPrinter = DomPrinter;

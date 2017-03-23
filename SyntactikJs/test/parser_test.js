@@ -1,14 +1,15 @@
 ﻿require("amd-loader");
 
 var fs = require("fs");
-var path = require("path");
+//var path = require("path");
 var cwd = __dirname + "/";
 
 var InputStream = require("../InputStream").InputStream;
 var DomPrinter = require("../DomPrinter").DomPrinter;
-var Parser = require("../Parser").Parser;
+var Parser = require("../Parser");
+//var assert = require("assert");
+var assert = require('chai').assert;
 
-var QUnit = require("qunitjs");
 
 
 function test() {
@@ -18,13 +19,20 @@ function test() {
 };
 
 function testScenario(name) {
-    console.log("Testing scenario " + name + "\n");
+    console.log("\u001b[36m" + "Testing scenario " + name + "\n" + "\u001b[0m");
     
     var code = fs.readFileSync(cwd + "/scenarios/" + name + ".smx", "utf8");
-    console.log("Code:");
+    console.log("\u001b[33m" + "Code:" + "\u001b[0m");
     console.log(code);
     var input = new InputStream(code); 
-    var parser = new Parser(input);
+    var parser = new Parser.Parser(input);
+
+    var errors = [];
+    parser.errorListeners.push(function () {
+        var args = arguments;
+        errors.push(format(Parser.Errors[args[0]], Array.prototype.slice.call(args, 2)) + " (" + args[1].begin.line + ":" + args[1].begin.column
+            + ")-(" + args[1].end.line + ":" + args[1].end.column + ")");
+
     var domPrinter = new DomPrinter();
     var pair = parser.parseModule();
     console.log("DOM:");

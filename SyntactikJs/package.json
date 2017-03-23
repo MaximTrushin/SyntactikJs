@@ -6,7 +6,9 @@
   "dependencies": {
     "amd-loader": "^0.0.5"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^3.5.0"
+  },
   "scripts": {
     "test": "node test.js"
   },

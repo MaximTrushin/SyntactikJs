@@ -59,7 +59,7 @@
             while (this.pairStack[this.pairStack.length - 1].indent >= 0) this.pairStack.pop();
 
             if (this.wsaStack.length > 0)
-                this.reportSyntaxError(1, this.getLocation(this.input), "Closing parenthesis");
+                this.reportSyntaxError(1, this.createInterval(this.input, this.input), "Closing parenthesis");
 
             return this.pairStack[this.pairStack.length - 1].pair;
         };
@@ -138,11 +138,11 @@
                     this.lineState.state = ParserStateEnum.Delimiter;
                     break;
                 } else if (this.input.next === 34) { // "
-                    this.parseSQName();
+                    this.parseDQName();
                     this.lineState.state = ParserStateEnum.Delimiter;
                     break;
                 } else if (this.input.next === 40 || this.input.next === 41 || this.input.next === 44) { // (  )  ,
-                    this.Consume();
+                    this.input.consume();
                     this.reportUnexpectedCharacter();
                 } else if (this.input.next === 61 || this.input.next === 58){ // =  :
                     var p = new Pair();
@@ -287,7 +287,7 @@
         this.processIndent = function(begin, end, indentSum) {
             var indent = end - begin + 1;
             if (this.indentSymbol === 0 && indent > 0) //First indent defines indent standard for the whole file.
-                this.indentSymbol = this.input.getChar(begin);
+                this.indentSymbol = this.input.getChar(begin).charCodeAt(0);
 
             while (this.pairStack[this.pairStack.length-1].indent >= indent) this.pairStack.pop();
 
@@ -421,7 +421,7 @@
                 }
                 this.input.consume();
 
-                if (!this.input.isSpaceCharacter()) {
+                if (!this.input.isOnSpaceCharacter()) {
                     if (begin.index === -1) begin = this.getLocation(this.input);
                     end = this.getLocation(this.input);
                 }
@@ -463,9 +463,8 @@
                     newPair.name = this.input.getText(p.valueInterval.begin.index, p.valueInterval.end.index);
                     newPair.nameInterval = p.valueInterval;
                     newPair.delimiter = delimiter;
-
-                    p.ObjectValue = newPair;
-
+                    p.objectValue = newPair;
+                    p.value = null;
                     this.pairStack.push({
                         pair: newPair,
                         indent: this.lineState.indent,
@@ -491,6 +490,7 @@
                     newPair.delimiter = delimiter;
                     newPair.createBlock();
                     p.objectValue = newPair;
+                    p.value = null;
 
                     this.pairStack.push({
                         pair: newPair,
@@ -648,7 +648,7 @@
                 }
                 this.input.consume();
 
-                if (!this.input.isSpaceCharacter()) //Ignoring leading and trailing spaces
+                if (!this.input.isOnSpaceCharacter()) //Ignoring leading and trailing spaces
                 {
                     if (begin.index === -1) begin = this.getLocation(this.input);
                     end = this.getLocation(this.input);
@@ -765,13 +765,13 @@
                         break;
                     }
 
-                    this.reportSyntaxError(1, this.getLocation(this.input), "Single quote");
+                    this.reportSyntaxError(1, this.createInterval(this.input, this.input), "Single quote");
                     this.assignValueToPair(begin, this.getLocation(this.input), true);
                     break;
                 }
 
                 if (this.input.next === -1) {
-                    this.reportSyntaxError(1, this.getLocation(this.input), "Single quote");
+                    this.reportSyntaxError(1, this.createInterval(this.input, this.input), "Single quote");
                     this.assignValueToPair(begin, this.getLocation(this.input), true);
                     break;
                 }
@@ -809,13 +809,13 @@
                         break;
                     }
 
-                    this.reportSyntaxError(1, this.getLocation(this.input), "Double quote");
+                    this.reportSyntaxError(1, this.createInterval(this.input, this.input), "Double quote");
                     this.assignValueToPair(begin, this.getLocation(this.input), true);
                     break;
                 }
 
                 if (this.input.next === -1) {
-                    this.reportSyntaxError(1, this.getLocation(this.input), "Double quote");
+                    this.reportSyntaxError(1, this.createInterval(this.input, this.input), "Double quote");
                     this.assignValueToPair(begin, this.getLocation(this.input), true);
                     break;
                 }
@@ -843,7 +843,7 @@
                 }
                 this.input.consume();
 
-                if (!this.input.isSpaceCharacter()) {
+                if (!this.input.isOnSpaceCharacter()) {
                     if (begin.index === -1) begin = this.getLocation(this.input);
                     end = this.getLocation(this.input);
                 }
@@ -908,7 +908,7 @@
 
                             if (this.lineState.inline && p.block !== null && p.block.length > 0 && firstComma)
                             {
-                                this.reportSyntaxError(1, this.getLocation(this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
+                                this.reportSyntaxError(1, this.createInterval(this.input, this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
                             }
                         }
                         else
@@ -917,7 +917,7 @@
 
                             if (this.lineState.inline && p.block !== null && p.block.length > 0 && firstComma)
                             {
-                                this.reportSyntaxError(1, this.getLocation(this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
+                                this.reportSyntaxError(1, this.createInterval(this.input, this.input), this.wsaStack.length > 0 ? "Comma or closing parenthesis" : "Comma");
                                 this.exitPair();
                             }
                         }
@@ -938,7 +938,7 @@
             
         };
         this.reportUnexpectedCharacter = function() {
-            this.reportSyntaxError(0, this.getLocation(this.input), this.input.getChar(this.input.index));
+            this.reportSyntaxError(0, this.createInterval(this.input, this.input), this.input.getChar(this.input.index));
         };
         this.eol = function() {
             if (this.input.next === -1) return true;
@@ -1004,7 +1004,7 @@
             }
         };
         this.getValueStart = function(pair) {
-            if (pair.valueQuotesType === 2) return 42;
+            if (pair.valueQuotesType === 2) return 34;
             if (pair.valueQuotesType === 1) return 39;
             return -2;
         };
@@ -1031,11 +1031,11 @@
             }
         };
         this.parseSQName = function() {
-            this.input.consume(); // Consume starting "
+            this.input.consume(); // Consume starting '
             var begin = this.getLocation(this.input);
 
             while (true) {
-                if (this.input.next === 39) { // ''
+                if (this.input.next === 39) { // '
                     this.input.consume();
                     break;
                 }
@@ -1047,11 +1047,11 @@
 
                 this.input.consume();
             }
-            var name = this.input.next === 39 /* ' */ ? this.input.getText(begin.index + 1, this.input.index - 1): this.input.getText(begin.index + 1, this.input.index);
+            var name = this.input.getChar(this.input.index).charCodeAt(0) === 39 /* ' */ ? this.input.getText(begin.index + 1, this.input.index - 1): this.input.getText(begin.index + 1, this.input.index);
             var pair = new Pair();
             pair.name = name;
             pair.nameInterval = this.createInterval(begin, this.input);
-            this.nameQuotesType = 1;
+            pair.nameQuotesType = 1;
             this.pairStack[this.pairStack.length - 1].pair.block.push(pair);
             this.pairStack.push({ pair: pair, indent: this.lineState.indent, begin: this.lineState.indentBegin, end: this.lineState.indentEnd });
             this.lineState.inline = true;
@@ -1067,6 +1067,32 @@
         };
         this.reportInvalidIndentation = function(interval) {
             this.reportSyntaxError(2, interval);
+        };
+        this.parseDQName = function() {
+            this.input.consume(); // Consume starting "
+            var begin = this.getLocation(this.input);
+
+            while (true) {
+                if (this.input.next === 34) { // "
+                    this.input.consume();
+                    break;
+                }
+
+                if (this.input.isNewLineCharacter() || this.input.next === -1) {
+                    this.reportSyntaxError(1, this.createInterval(this.input, this.input), "Double quote");
+                    break;
+                }
+
+                this.input.consume();
+            }
+            var name = this.input.getChar(this.input.index).charCodeAt(0) === 34 /* " */ ? this.input.getText(begin.index + 1, this.input.index - 1) : this.input.getText(begin.index + 1, this.input.index);
+            var pair = new Pair();
+            pair.name = name;
+            pair.nameInterval = this.createInterval(begin, this.input);
+            pair.nameQuotesType = 2;
+            this.pairStack[this.pairStack.length - 1].pair.block.push(pair);
+            this.pairStack.push({ pair: pair, indent: this.lineState.indent, begin: this.lineState.indentBegin, end: this.lineState.indentEnd });
+            this.lineState.inline = true;
         };
     }).call(Parser.prototype);
 
